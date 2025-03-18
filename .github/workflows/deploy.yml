@@ -26,6 +26,7 @@ jobs:
           context: .
           push: true
           tags: sadid369/nextcicd:latest
+          no-cache: true
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
@@ -34,8 +35,10 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            sudo docker pull sadid369/nextcicd:latest
+            sudo docker pull sadid369/nextcicd:latest || true
             sudo docker stop nextcicd || true
             sudo docker rm nextcicd || true
+            sudo docker rmi sadid369/nextcicd:latest || true  # Remove old image
+            sudo docker pull sadid369/nextcicd:latest           # Fresh pull
             sudo docker run -d --name nextcicd -p 3000:3000 sadid369/nextcicd:latest
             sudo systemctl reload nginx
